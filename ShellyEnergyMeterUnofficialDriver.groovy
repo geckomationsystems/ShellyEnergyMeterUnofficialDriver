@@ -23,7 +23,7 @@
  *
  *  Changes:
  *  
- *  1.0.0 - Initial code - Unofficial Custom Driver - Code borrowed and modified to support the Shelly Motion 2 Devices
+ *  1.0.0 - Initial code - Unofficial Custom Driver - Code borrowed and modified to support the Shelly Energy Meter Devices
  *              Removed the Check FW and Upgrade features. /Corey
  *
  */
