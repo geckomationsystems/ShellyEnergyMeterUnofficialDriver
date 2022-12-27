@@ -8,7 +8,7 @@ https://www.shelly.cloud/en-us/products/product-overview/em-120a
 
 https://www.shelly.cloud/en-us/products/product-overview/shelly-3-em
 
-The combines channels are on the primary device driver (2 or 3 phased) and the channels are on thier own child device driver (each single phase).
+The main driver combines channels on the primary device driver for 2 or 3 phased circuits. The channels are on thier own child device driver (each single phase).
 
 Install the child device driver name as "Shelly Energy Meter Device"
 
