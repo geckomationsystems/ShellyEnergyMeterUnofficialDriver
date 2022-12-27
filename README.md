@@ -1,5 +1,5 @@
 # ShellyEnergyMeterUnofficialDriver
-Shelly Energy Meter (EM) or (E3M) Unofficial Driver for Hubitat (no mqtt requirement)
+Shelly Energy Meter (SHEM) or (SHE3M) Unofficial Driver for Hubitat (no mqtt requirement)
 
 Here is a unofficial driver for Shelly Energy Meter for the Hubitat. It uses a IP address much like the switching products, no need for mqtt.
 Install your Energy Meter device on WiFi, upgrade the firmware and set the meter requirements on the Shelly Web GUI.
