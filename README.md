@@ -30,3 +30,4 @@ If your going across a router hop to get the callback to work a hex IP must be u
 
 Enjoy...
 
+Disclaimer: working in circuit breaker boxes and open wiring is dangerous and should be left to trained technicians.  DIYs please beware of risk of death.
