@@ -23,8 +23,9 @@
  *
  *  Changes:
  *  
- *  1.0.0 - Initial code - Unofficial Custom Driver - Code borrowed and modified to support the Shelly Energy Meter Devices
+ *  1.0.0 - Initial code - Unofficial Custom Driver - Code borrowed and modified to support the Shelly Motion 2 Devices
  *              Removed the Check FW and Upgrade features. /Corey
+ *  1.0.1 - Added 24hr reset totals
  *
  */
 
@@ -34,7 +35,7 @@ import groovy.json.*
 import groovy.transform.Field
 
 def setVersion(){
-	state.Version = "1.0.0"
+	state.Version = "1.0.1"
 	state.InternalName = "ShellyEnergyMeterUnofficialDriver"
 }
 
@@ -72,9 +73,9 @@ metadata {
     
 
 	preferences {
-	  def refreshRate = [:]
+	def refreshRate = [:]
 		refreshRate << ["1 min" : "Refresh every minute"]
-    refreshRate << ["5 min" : "Refresh every 5 minutes"]
+        refreshRate << ["5 min" : "Refresh every 5 minutes"]
 		refreshRate << ["15 min" : "Refresh every 15 minutes"]
 		refreshRate << ["30 min" : "Refresh every 30 minutes"]
 		refreshRate << ["manual" : "Manually or Polling Only"]
@@ -82,9 +83,10 @@ metadata {
 	input("ip", "string", title:"IP", description:"Shelly IP Address", defaultValue:"" , required: true)
 	input name: "username", type: "text", title: "Username:", description: "(blank if none)", required: false
 	input name: "password", type: "password", title: "Password:", description: "(blank if none)", required: false
-  input name: "isrounded", type: "bool", title: "Rounded Numbers", defaultValue: true
-  input("refresh_Rate", "enum", title: "Device Refresh Rate", description:"<font color=red>!!WARNING!!</font><br>DO NOT USE if you have over 50 Shelly devices.", options: refreshRate, defaultValue: "manual")
-  input name: "debugOutput", type: "bool", title: "Enable debug logging?", defaultValue: true
+    input name: "isrounded", type: "bool", title: "Rounded Numbers", defaultValue: true
+    input name: "dototalsreset", type: "bool", title: "Reset Energy Totals at 12AM", defaultValue: true
+    input("refresh_Rate", "enum", title: "Device Refresh Rate", description:"<font color=red>!!WARNING!!</font><br>DO NOT USE if you have over 50 Shelly devices.", options: refreshRate, defaultValue: "manual")
+    input name: "debugOutput", type: "bool", title: "Enable debug logging?", defaultValue: true
 	input name: "debugParse", type: "bool", title: "Enable JSON parse logging?", defaultValue: true
 	input name: "txtEnable", type: "bool", title: "Enable descriptionText logging", defaultValue: true
 	}
@@ -103,7 +105,10 @@ def initialize() {
                 }
             }
         }    
-    runIn(10,getMeterStatus)
+    //def time_off = "23:59"
+    //time_off = new Date(timeToday(time_off).time)
+    updated()
+    //runIn(10,getMeterStatus)
 }
 
 def installed() {
@@ -125,8 +130,8 @@ def updated() {
     if (txtEnable) log.info "Shelly Energy Meter IP ${ip} preferences updated."
     log.warn "Shelly Motion 2 IP ${ip} debug logging is: ${debugOutput == true}"
     unschedule()
-    dbCleanUp()
-    
+    //dbCleanUp()
+    schedule("0 0 0 ? * * *",runResetTotals)
     switch(refresh_Rate) {
 		case "1 min" :
 			runEvery1Minute(autorefresh)
@@ -157,8 +162,18 @@ private dbCleanUp() {
     state.clear()
 }
 
+
+def runResetTotals() {
+    if (dototalsreset) {
+        logDebug "Shelly Energy Meter IP ${ip} totals reset."
+        ResetTotals()
+    }
+}    
+
+def Refresh() { refresh() }
+
 def refresh() {
-    logDebug "Shelly Energy Meter IP ${ip} refresh."
+    log.info "Shelly Energy Meter IP ${ip} refresh."
     getMeterStatus()
 }
 
@@ -168,7 +183,7 @@ def getMeterStatus() {
 try {
     httpGet(params) {
         resp -> resp.headers.each {
-        logJSON "Shelly Motion 2 IP ${ip} response: ${it.name} : ${it.value}"
+        logJSON "Shelly Energy Meter IP ${ip} response: ${it.name} : ${it.value}"
     }
         obs = resp.data
         logJSON "Shelly Energy Meter IP ${ip} params: ${params}"
@@ -450,16 +465,26 @@ try {
 }
     
 def ResetTotals() {
-        if (txtEnable) log.info "Shelly Energy Meter IP ${ip} Resetting Totals"
-    def params = [uri: "http://${username}:${password}@${ip}/reset_totals"]
-try {
-    httpGet(params) {
-        resp -> resp.headers.each {
-        logDebug "Shelly Energy Meter IP ${ip} response: ${it.name} : ${it.value}"
+    if (txtEnable) log.info "Shelly Energy Meter IP ${ip} Resetting Totals"
+    def params = [uri: "http://${username}:${password}@${ip}/emeter/0?reset_totals=0"]
+    try {
+        httpGet(params) {
+            resp -> resp.headers.each {
+                logDebug "Shelly Energy Meter IP ${ip} response: ${it.name} : ${it.value}"
+                }
+    } // End try
+    } catch (e) {
+        log.error "Shelly Energy Meter IP ${ip} something went wrong: $e"
     }
-} // End try
-        
-} catch (e) {
+
+    params = [uri: "http://${username}:${password}@${ip}/emeter/1?reset_totals=0"]
+    try {
+        httpGet(params) {
+            resp -> resp.headers.each {
+            logDebug "Shelly Energy Meter IP ${ip} response: ${it.name} : ${it.value}"
+        }
+    } // End try
+    } catch (e) {
         log.error "Shelly Energy Meter IP ${ip} something went wrong: $e"
     }
     runIn(15,refresh)
