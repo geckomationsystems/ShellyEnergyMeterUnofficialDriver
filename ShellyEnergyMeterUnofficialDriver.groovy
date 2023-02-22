@@ -362,7 +362,6 @@ def autorefresh() {
 	state.LastRefresh = new Date().format("MM/d/YYYY \n HH:mm:ss", location.timeZone)
 	sendEvent(name: "LastRefresh", value: state.LastRefresh, descriptionText: "Last refresh performed")
 	}
-	if (txtEnable) log.info "Shelly Energy Meter IP ${ip} executing 'auto refresh'" //RK
     refresh()
 }
 
