@@ -26,7 +26,7 @@
  *  1.0.0 - Initial code - Unofficial Custom Driver - Code borrowed and modified to support the Shelly Motion 2 Devices
  *              Removed the Check FW and Upgrade features. /Corey
  *  1.0.1 - Added 24hr reset totals
- *
+ *  1.0.2 - Added SHEM-3 detection
  */
 
        
@@ -35,7 +35,7 @@ import groovy.json.*
 import groovy.transform.Field
 
 def setVersion(){
-	state.Version = "1.0.1"
+	state.Version = "1.0.2"
 	state.InternalName = "ShellyEnergyMeterUnofficialDriver"
 }
 
@@ -323,6 +323,7 @@ try {
         state.devicetype = obs.device.type
         if (state.devicetype == "SHEM") { state.channels = 2 } 
         else if (state.devicetype == "SH3EM") { state.channels = 3 }
+        else if (state.devicetype == "SHEM-3") { state.channels = 3 }
         else { state.channels = 0 }
         
     } // End try
